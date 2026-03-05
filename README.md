@@ -32,13 +32,15 @@ Vector memory setup is now part of the onboarding wizard instead of manual JSON 
 
 Runtime: **Node >= 22**, **pnpm >= 9**.
 
-### Quick install (isolated from source)
-
-One-liner — clones to `~/.openclaw-reborn`, builds, and links the `openclaw` binary:
+### Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/dawnforge-lab/openclaw-reborn/main/install.sh | bash
+git clone https://github.com/dawnforge-lab/openclaw-reborn.git
+cd openclaw-reborn
+./install.sh
 ```
+
+This installs dependencies, builds, and links the `openclaw` binary to `~/.local/bin/`.
 
 Then run the onboarding wizard:
 
@@ -46,30 +48,14 @@ Then run the onboarding wizard:
 openclaw onboard --install-daemon
 ```
 
-To update:
+To update, pull and re-run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/dawnforge-lab/openclaw-reborn/main/install.sh | bash
+git pull
+./install.sh
 ```
 
-Same script — it pulls latest and rebuilds.
-
-### Development setup
-
-If you want to contribute or modify the source:
-
-```bash
-git clone https://github.com/dawnforge-lab/openclaw-reborn.git
-cd openclaw-reborn
-
-pnpm install
-pnpm ui:build
-pnpm build
-
-pnpm openclaw onboard --install-daemon
-```
-
-Dev loop:
+### Dev loop
 
 ```bash
 pnpm gateway:watch

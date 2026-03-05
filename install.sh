@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="https://github.com/dawnforge-lab/openclaw-reborn.git"
-INSTALL_DIR="${OPENCLAW_INSTALL_DIR:-$HOME/.openclaw-reborn}"
 BIN_DIR="${OPENCLAW_BIN_DIR:-$HOME/.local/bin}"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo "Installing OpenClaw Reborn..."
-echo "  Install dir: $INSTALL_DIR"
-echo "  Bin link:    $BIN_DIR/openclaw"
+echo "  Source dir: $SCRIPT_DIR"
+echo "  Bin link:   $BIN_DIR/openclaw"
 echo ""
 
 # Check Node >= 22
@@ -23,20 +22,7 @@ if ! command -v pnpm &>/dev/null; then
   exit 1
 fi
 
-# Clone or pull
-if [ -d "$INSTALL_DIR/.git" ]; then
-  echo "Updating existing installation..."
-  git -C "$INSTALL_DIR" pull --ff-only
-else
-  if [ -d "$INSTALL_DIR" ]; then
-    echo "Error: $INSTALL_DIR exists but is not a git repo. Remove it first."
-    exit 1
-  fi
-  echo "Cloning..."
-  git clone "$REPO" "$INSTALL_DIR"
-fi
-
-cd "$INSTALL_DIR"
+cd "$SCRIPT_DIR"
 
 echo "Installing dependencies..."
 pnpm install --frozen-lockfile
@@ -47,8 +33,8 @@ pnpm build
 
 # Link binary
 mkdir -p "$BIN_DIR"
-ln -sf "$INSTALL_DIR/openclaw.mjs" "$BIN_DIR/openclaw"
-chmod +x "$INSTALL_DIR/openclaw.mjs"
+ln -sf "$SCRIPT_DIR/openclaw.mjs" "$BIN_DIR/openclaw"
+chmod +x "$SCRIPT_DIR/openclaw.mjs"
 
 echo ""
 echo "Done! Run: openclaw onboard --install-daemon"
