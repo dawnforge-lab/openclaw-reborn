@@ -10,7 +10,13 @@ import { Type } from "@sinclair/typebox";
 import type { OpenClawPluginApi } from "openclaw/plugin-sdk/whatsapp-user";
 import { whatsappUserConfigSchema } from "./config.js";
 import { connect, disconnect, getSocket, isConnected } from "./connection.js";
-import { getMessageCount, getMessages, getRecentChats, pruneOlderThan, storeMessage } from "./message-store.js";
+import {
+  getMessageCount,
+  getMessages,
+  getRecentChats,
+  pruneOlderThan,
+  storeMessage,
+} from "./message-store.js";
 
 let lastQr: string | null = null;
 
@@ -19,7 +25,10 @@ function formatJid(jid: string): string {
 }
 
 function formatTimestamp(ts: number): string {
-  return new Date(ts).toISOString().replace("T", " ").replace(/\.\d+Z$/, " UTC");
+  return new Date(ts)
+    .toISOString()
+    .replace("T", " ")
+    .replace(/\.\d+Z$/, " UTC");
 }
 
 function textResult(text: string, details?: Record<string, unknown>) {
@@ -155,8 +164,12 @@ const plugin = {
         description:
           "Read messages from a specific WhatsApp chat. Provide the chat JID (phone@s.whatsapp.net for DMs, id@g.us for groups).",
         parameters: Type.Object({
-          chatJid: Type.String({ description: "Chat JID (e.g. 1234567890@s.whatsapp.net or groupid@g.us)" }),
-          limit: Type.Optional(Type.Number({ description: "Max messages to return (default: 20)" })),
+          chatJid: Type.String({
+            description: "Chat JID (e.g. 1234567890@s.whatsapp.net or groupid@g.us)",
+          }),
+          limit: Type.Optional(
+            Type.Number({ description: "Max messages to return (default: 20)" }),
+          ),
         }),
         async execute(_toolCallId: string, params: unknown) {
           const { chatJid, limit = 20 } = params as { chatJid: string; limit?: number };
@@ -175,10 +188,9 @@ const plugin = {
             return `[${formatTimestamp(msg.timestamp)}] ${sender}: ${msg.text}${media}`;
           });
 
-          return textResult(
-            `Messages in ${formatJid(chatJid)}:\n\n${lines.join("\n")}`,
-            { count: msgs.length },
-          );
+          return textResult(`Messages in ${formatJid(chatJid)}:\n\n${lines.join("\n")}`, {
+            count: msgs.length,
+          });
         },
       },
       { name: "wa_read_messages" },
@@ -241,9 +253,7 @@ const plugin = {
             return textResult("None of the provided numbers are on WhatsApp.");
           }
 
-          const lines = results.map(
-            (r) => `${r.jid}: ${r.exists ? "on WhatsApp" : "not found"}`,
-          );
+          const lines = results.map((r) => `${r.jid}: ${r.exists ? "on WhatsApp" : "not found"}`);
 
           return textResult(lines.join("\n"), { results });
         },
@@ -276,10 +286,9 @@ const plugin = {
             .sort((a, b) => (a.subject ?? "").localeCompare(b.subject ?? ""))
             .map((g) => `${g.id}: ${g.subject} (${g.participants?.length ?? 0} members)`);
 
-          return textResult(
-            `Groups (${entries.length}):\n\n${lines.join("\n")}`,
-            { count: entries.length },
-          );
+          return textResult(`Groups (${entries.length}):\n\n${lines.join("\n")}`, {
+            count: entries.length,
+          });
         },
       },
       { name: "wa_list_groups" },
@@ -311,7 +320,7 @@ const plugin = {
 
           let status: string | undefined;
           try {
-            const s = await sock.fetchStatus(jid) as unknown;
+            const s = (await sock.fetchStatus(jid)) as unknown;
             if (Array.isArray(s)) {
               status = (s[0] as { status?: string })?.status;
             } else if (s && typeof s === "object") {
@@ -356,7 +365,14 @@ const plugin = {
       id: "whatsapp-user",
       async start() {
         api.logger.info(`whatsapp-user: plugin started (auth: ${authDir})`);
-        await ensureConnected();
+        // Only auto-connect if already paired (creds exist). Otherwise wait for wa_pair.
+        const fs = await import("node:fs");
+        const path = await import("node:path");
+        if (fs.existsSync(path.join(authDir, "creds.json"))) {
+          await ensureConnected();
+        } else {
+          api.logger.info("whatsapp-user: not paired yet — use wa_pair tool to connect");
+        }
       },
       async stop() {
         clearInterval(pruneInterval);
