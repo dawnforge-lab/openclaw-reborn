@@ -138,7 +138,6 @@ async function runWhatsAppPairing(authDir: string): Promise<void> {
 
   const { makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion, DisconnectReason } =
     await import("@whiskeysockets/baileys");
-  const { Boom } = await import("@hapi/boom");
   const qrcode = await import("qrcode-terminal");
 
   const { state, saveCreds } = await useMultiFileAuthState(authDir);
@@ -188,7 +187,8 @@ async function runWhatsAppPairing(authDir: string): Promise<void> {
       }
 
       if (connection === "close") {
-        const statusCode = (lastDisconnect?.error as InstanceType<typeof Boom>)?.output?.statusCode;
+        const err = lastDisconnect?.error as Record<string, unknown> | undefined;
+        const statusCode = (err?.output as Record<string, unknown>)?.statusCode;
         if (statusCode === Number(DisconnectReason.loggedOut)) {
           cleanup();
           reject(new Error("WhatsApp logged out during pairing"));
