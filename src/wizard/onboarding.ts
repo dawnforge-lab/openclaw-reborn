@@ -498,6 +498,10 @@ export async function runOnboardingWizard(
   const { configureMemoryForOnboarding } = await import("./onboarding.memory.js");
   nextConfig = await configureMemoryForOnboarding({ flow, nextConfig, prompter });
 
+  // WhatsApp user access (read/write chats as the user)
+  const { configureWhatsAppUserForOnboarding } = await import("./onboarding.whatsapp-user.js");
+  nextConfig = await configureWhatsAppUserForOnboarding({ flow, nextConfig, prompter });
+
   nextConfig = onboardHelpers.applyWizardMetadata(nextConfig, { command: "onboard", mode });
   await writeConfigFile(nextConfig);
 
