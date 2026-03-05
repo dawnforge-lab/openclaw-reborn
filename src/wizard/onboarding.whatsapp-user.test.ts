@@ -3,12 +3,21 @@ import { createWizardPrompter as buildWizardPrompter } from "../../test/helpers/
 import { configureWhatsAppUserForOnboarding } from "./onboarding.whatsapp-user.js";
 import type { WizardPrompter } from "./prompts.js";
 
+// Mock fs.existsSync to control pairing check
+vi.mock("node:fs", async () => {
+  const actual = await vi.importActual<typeof import("node:fs")>("node:fs");
+  return { ...actual, existsSync: vi.fn(() => true) };
+});
+
 describe("configureWhatsAppUserForOnboarding", () => {
-  function createPrompter(overrides?: { confirm?: WizardPrompter["confirm"] }) {
+  function createPrompter(overrides?: {
+    confirm?: WizardPrompter["confirm"];
+    note?: WizardPrompter["note"];
+  }) {
     return buildWizardPrompter({
       confirm:
         overrides?.confirm ?? (vi.fn(async () => true) as unknown as WizardPrompter["confirm"]),
-      note: vi.fn(async () => {}) as unknown as WizardPrompter["note"],
+      note: overrides?.note ?? (vi.fn(async () => {}) as unknown as WizardPrompter["note"]),
     });
   }
 

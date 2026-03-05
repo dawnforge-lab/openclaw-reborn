@@ -214,12 +214,12 @@ export async function runOnboardingWizard(
         : "off";
 
     // Derive tunnel type from existing config
-    const tunnelType: import("./onboarding.types.js").TunnelType =
-      baseConfig.gateway?.ngrok?.enabled
-        ? "ngrok"
-        : tailscaleMode !== "off"
-          ? "tailscale"
-          : "none";
+    const tunnelType: import("./onboarding.types.js").TunnelType = baseConfig.gateway?.ngrok
+      ?.enabled
+      ? "ngrok"
+      : tailscaleMode !== "off"
+        ? "tailscale"
+        : "none";
 
     return {
       hasExisting,
@@ -493,6 +493,10 @@ export async function runOnboardingWizard(
   // Setup hooks (session memory on /new)
   const { setupInternalHooks } = await import("../commands/onboard-hooks.js");
   nextConfig = await setupInternalHooks(nextConfig, runtime, prompter);
+
+  // Sub-agents (parallel task spawning)
+  const { configureSubagentsForOnboarding } = await import("./onboarding.subagents.js");
+  nextConfig = await configureSubagentsForOnboarding({ flow, nextConfig, prompter });
 
   // Long-term memory (memory-lancedb)
   const { configureMemoryForOnboarding } = await import("./onboarding.memory.js");
