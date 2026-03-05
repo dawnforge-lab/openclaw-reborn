@@ -326,7 +326,10 @@ function resolveSharedServiceEnvironmentFields(
     stateDir,
     configPath,
     tmpDir,
-    minimalPath: buildMinimalServicePath({ env }),
+    minimalPath: buildMinimalServicePath({
+      env,
+      extraDirs: [path.dirname(process.execPath)],
+    }),
     proxyEnv,
     nodeCaCerts,
     nodeUseSystemCa,
