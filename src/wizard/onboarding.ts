@@ -213,16 +213,26 @@ export async function runOnboardingWizard(
         ? tailscaleRaw
         : "off";
 
+    // Derive tunnel type from existing config
+    const tunnelType: import("./onboarding.types.js").TunnelType =
+      baseConfig.gateway?.ngrok?.enabled
+        ? "ngrok"
+        : tailscaleMode !== "off"
+          ? "tailscale"
+          : "none";
+
     return {
       hasExisting,
       port: resolveGatewayPort(baseConfig),
       bind,
       authMode,
+      tunnelType,
       tailscaleMode,
       token: baseConfig.gateway?.auth?.token,
       password: baseConfig.gateway?.auth?.password,
       customBindHost: baseConfig.gateway?.customBindHost,
       tailscaleResetOnExit: baseConfig.gateway?.tailscale?.resetOnExit ?? false,
+      ngrokDomain: baseConfig.gateway?.ngrok?.domain,
     };
   })();
 
@@ -266,14 +276,14 @@ export async function runOnboardingWizard(
             ? [`Gateway custom IP: ${quickstartGateway.customBindHost}`]
             : []),
           `Gateway auth: ${formatAuth(quickstartGateway.authMode)}`,
-          `Tailscale exposure: ${formatTailscale(quickstartGateway.tailscaleMode)}`,
+          `Tunnel: ${quickstartGateway.tunnelType === "ngrok" ? "ngrok" : quickstartGateway.tunnelType === "tailscale" ? formatTailscale(quickstartGateway.tailscaleMode) : "None"}`,
           "Direct to chat channels.",
         ]
       : [
           `Gateway port: ${DEFAULT_GATEWAY_PORT}`,
           "Gateway bind: Loopback (127.0.0.1)",
           "Gateway auth: Token (default)",
-          "Tailscale exposure: Off",
+          "Tunnel: None",
           "Direct to chat channels.",
         ];
     await prompter.note(quickstartLines.join("\n"), "QuickStart");
@@ -483,6 +493,10 @@ export async function runOnboardingWizard(
   // Setup hooks (session memory on /new)
   const { setupInternalHooks } = await import("../commands/onboard-hooks.js");
   nextConfig = await setupInternalHooks(nextConfig, runtime, prompter);
+
+  // Long-term memory (memory-lancedb)
+  const { configureMemoryForOnboarding } = await import("./onboarding.memory.js");
+  nextConfig = await configureMemoryForOnboarding({ flow, nextConfig, prompter });
 
   nextConfig = onboardHelpers.applyWizardMetadata(nextConfig, { command: "onboard", mode });
   await writeConfigFile(nextConfig);

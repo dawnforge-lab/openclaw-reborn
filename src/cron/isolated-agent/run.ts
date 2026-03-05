@@ -382,7 +382,7 @@ export async function runCronIsolatedAgentTurn(params: {
   }
   if (deliveryRequested) {
     commandBody =
-      `${commandBody}\n\nReturn your summary as plain text; it will be delivered automatically. If the task explicitly calls for messaging a specific external recipient, note who/where it should go instead of sending it yourself.`.trim();
+      `${commandBody}\n\nExecute this task now using your available tools. Take concrete action — do not just summarize or acknowledge. When done, share your results and engage with the user: offer insights, suggest follow-ups, or ask if they need anything. Your output will be delivered automatically. If the task explicitly calls for messaging a specific external recipient, note who/where it should go instead of sending it yourself.`.trim();
   }
 
   const existingSkillsSnapshot = cronSession.sessionEntry.skillsSnapshot;

@@ -9,6 +9,7 @@ import type { PluginServicesHandle } from "../plugins/services.js";
 export function createGatewayCloseHandler(params: {
   bonjourStop: (() => Promise<void>) | null;
   tailscaleCleanup: (() => Promise<void>) | null;
+  ngrokCleanup: (() => Promise<void>) | null;
   canvasHost: CanvasHostHandler | null;
   canvasHostServer: CanvasHostServer | null;
   stopChannel: (name: ChannelId, accountId?: string) => Promise<void>;
@@ -47,6 +48,13 @@ export function createGatewayCloseHandler(params: {
     }
     if (params.tailscaleCleanup) {
       await params.tailscaleCleanup();
+    }
+    if (params.ngrokCleanup) {
+      try {
+        await params.ngrokCleanup();
+      } catch {
+        /* ignore */
+      }
     }
     if (params.canvasHost) {
       try {

@@ -2,9 +2,12 @@ import { escapeRegExp } from "../utils.js";
 import { HEARTBEAT_TOKEN } from "./tokens.js";
 
 // Default heartbeat prompt (used when config.agents.defaults.heartbeat.prompt is unset).
-// Keep it tight and avoid encouraging the model to invent/rehash "open loops" from prior chat context.
+// Two-phase: execute tasks, then engage proactively. Silence (HEARTBEAT_OK) is discouraged.
 export const HEARTBEAT_PROMPT =
-  "Read HEARTBEAT.md if it exists (workspace context). Follow it strictly. Do not infer or repeat old tasks from prior chats. If nothing needs attention, reply HEARTBEAT_OK.";
+  "Read HEARTBEAT.md if it exists (workspace context). For each task listed, take action now — execute it using your tools, make real progress. Do not just acknowledge. " +
+  "After handling tasks, think about the user: review recent conversations for follow-ups, check if anything interesting has come up, consider if there is something worth sharing or asking about. " +
+  "Always communicate — share what you did, what you found, or start a conversation. Use your messaging tools to reach out. " +
+  "Only reply HEARTBEAT_OK if there is genuinely nothing to do and nothing worth saying. Prefer action and engagement over silence.";
 export const DEFAULT_HEARTBEAT_EVERY = "30m";
 export const DEFAULT_HEARTBEAT_ACK_MAX_CHARS = 300;
 

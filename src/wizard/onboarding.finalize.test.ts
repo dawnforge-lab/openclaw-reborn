@@ -137,6 +137,7 @@ describe("finalizeOnboardingWizard", () => {
           bind: "loopback",
           authMode: "password",
           gatewayToken: undefined,
+          tunnelType: "none",
           tailscaleMode: "off",
           tailscaleResetOnExit: false,
         },

@@ -97,6 +97,7 @@ import { resolveSessionKeyForRun } from "./server-session-key.js";
 import { logGatewayStartup } from "./server-startup-log.js";
 import { startGatewaySidecars } from "./server-startup.js";
 import { startGatewayTailscaleExposure } from "./server-tailscale.js";
+import { startGatewayNgrokTunnel } from "./server-ngrok.js";
 import { createWizardSessionTracker } from "./server-wizard-sessions.js";
 import { attachGatewayWsHandlers } from "./server-ws-runtime.js";
 import {
@@ -852,6 +853,18 @@ export async function startGatewayServer(
         logTailscale,
       });
 
+  const ngrokCleanup = minimalTestGateway
+    ? null
+    : await startGatewayNgrokTunnel({
+        ngrokConfig: cfgAtStart.gateway?.ngrok ?? {},
+        port,
+        controlUiBasePath,
+        logNgrok: {
+          info: (msg: string) => log.info(msg),
+          warn: (msg: string) => log.warn(msg),
+        },
+      });
+
   let browserControl: Awaited<ReturnType<typeof startBrowserControlServerIfEnabled>> = null;
   if (!minimalTestGateway) {
     ({ browserControl, pluginServices } = await startGatewaySidecars({
@@ -946,6 +959,7 @@ export async function startGatewayServer(
   const close = createGatewayCloseHandler({
     bonjourStop,
     tailscaleCleanup,
+    ngrokCleanup,
     canvasHost,
     canvasHostServer,
     stopChannel,

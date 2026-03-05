@@ -12,28 +12,23 @@ export function buildCronEventPrompt(
   const deliverToUser = opts?.deliverToUser ?? true;
   const eventText = pendingEvents.join("\n").trim();
   if (!eventText) {
-    if (!deliverToUser) {
-      return (
-        "A scheduled cron event was triggered, but no event content was found. " +
-        "Handle this internally and reply HEARTBEAT_OK when nothing needs user-facing follow-up."
-      );
-    }
     return (
-      "A scheduled cron event was triggered, but no event content was found. " +
-      "Reply HEARTBEAT_OK."
+      "A scheduled event was triggered but had no specific content. " +
+      "Use this as an opportunity: check on pending work, review recent conversations for follow-ups, " +
+      "or reach out to the user if you have something worth sharing. Prefer engagement over silence."
     );
   }
   if (!deliverToUser) {
     return (
-      "A scheduled reminder has been triggered. The reminder content is:\n\n" +
+      "A scheduled task has been triggered. The task is:\n\n" +
       eventText +
-      "\n\nHandle this reminder internally. Do not relay it to the user unless explicitly requested."
+      "\n\nExecute this task now using your tools. After completing it, think about whether the results are worth sharing with the user — if so, message them proactively. Do not just acknowledge the task. Take action, then communicate."
     );
   }
   return (
-    "A scheduled reminder has been triggered. The reminder content is:\n\n" +
+    "A scheduled task has been triggered. The task is:\n\n" +
     eventText +
-    "\n\nPlease relay this reminder to the user in a helpful and friendly way."
+    "\n\nExecute this task now using your tools. Once done, share results with the user and engage — ask if they need anything else, offer observations, or suggest next steps. Do not just acknowledge the task. Take action, then communicate."
   );
 }
 

@@ -52,6 +52,7 @@ describe("configureGatewayForOnboarding", () => {
       port: 18789,
       bind: "loopback" as const,
       authMode,
+      tunnelType: "none" as const,
       tailscaleMode: "off" as const,
       token: undefined,
       password: undefined,

@@ -24,6 +24,7 @@ import { validateIPv4AddressInput } from "../shared/net/ipv4.js";
 import type {
   GatewayWizardSettings,
   QuickstartGatewayDefaults,
+  TunnelType,
   WizardFlow,
 } from "./onboarding.types.js";
 import type { WizardPrompter } from "./prompts.js";
@@ -108,47 +109,89 @@ export async function configureGatewayForOnboarding(
           initialValue: "token",
         })) as GatewayAuthChoice);
 
-  const tailscaleMode: GatewayWizardSettings["tailscaleMode"] =
+  // Tunnel type selection: none, tailscale, or ngrok
+  const tunnelType: TunnelType =
     flow === "quickstart"
-      ? quickstartGateway.tailscaleMode
-      : await prompter.select<GatewayWizardSettings["tailscaleMode"]>({
-          message: "Tailscale exposure",
-          options: [...TAILSCALE_EXPOSURE_OPTIONS],
+      ? (quickstartGateway.tunnelType ?? "none")
+      : await prompter.select<TunnelType>({
+          message: "Tunnel / public access",
+          options: [
+            { value: "none", label: "None", hint: "Local access only" },
+            { value: "ngrok", label: "ngrok", hint: "Public HTTPS tunnel (recommended for mobile app)" },
+            { value: "tailscale", label: "Tailscale", hint: "Private tailnet or public funnel" },
+          ],
         });
 
-  // Detect Tailscale binary before proceeding with serve/funnel setup.
-  // Persist the path so getTailnetHostname can reuse it for origin injection.
+  // Tailscale config (only when tunnel=tailscale)
+  let tailscaleMode: GatewayWizardSettings["tailscaleMode"] = "off";
   let tailscaleBin: string | null = null;
-  if (tailscaleMode !== "off") {
-    tailscaleBin = await findTailscaleBinary();
-    if (!tailscaleBin) {
-      await prompter.note(TAILSCALE_MISSING_BIN_NOTE_LINES.join("\n"), "Tailscale Warning");
+  let tailscaleResetOnExit = flow === "quickstart" ? quickstartGateway.tailscaleResetOnExit : false;
+
+  if (tunnelType === "tailscale") {
+    tailscaleMode =
+      flow === "quickstart"
+        ? quickstartGateway.tailscaleMode
+        : await prompter.select<GatewayWizardSettings["tailscaleMode"]>({
+            message: "Tailscale exposure",
+            options: [...TAILSCALE_EXPOSURE_OPTIONS],
+          });
+
+    if (tailscaleMode !== "off") {
+      tailscaleBin = await findTailscaleBinary();
+      if (!tailscaleBin) {
+        await prompter.note(TAILSCALE_MISSING_BIN_NOTE_LINES.join("\n"), "Tailscale Warning");
+      }
+    }
+
+    if (tailscaleMode !== "off" && flow !== "quickstart") {
+      await prompter.note(TAILSCALE_DOCS_LINES.join("\n"), "Tailscale");
+      tailscaleResetOnExit = Boolean(
+        await prompter.confirm({
+          message: "Reset Tailscale serve/funnel on exit?",
+          initialValue: false,
+        }),
+      );
+    }
+
+    if (tailscaleMode !== "off" && bind !== "loopback") {
+      await prompter.note("Tailscale requires bind=loopback. Adjusting bind to loopback.", "Note");
+      bind = "loopback";
+      customBindHost = undefined;
+    }
+
+    if (tailscaleMode === "funnel" && authMode !== "password") {
+      await prompter.note("Tailscale funnel requires password auth.", "Note");
+      authMode = "password";
     }
   }
 
-  let tailscaleResetOnExit = flow === "quickstart" ? quickstartGateway.tailscaleResetOnExit : false;
-  if (tailscaleMode !== "off" && flow !== "quickstart") {
-    await prompter.note(TAILSCALE_DOCS_LINES.join("\n"), "Tailscale");
-    tailscaleResetOnExit = Boolean(
-      await prompter.confirm({
-        message: "Reset Tailscale serve/funnel on exit?",
-        initialValue: false,
-      }),
-    );
-  }
+  // ngrok config (only when tunnel=ngrok)
+  let ngrokDomain: string | undefined;
+  if (tunnelType === "ngrok") {
+    if (!process.env.NGROK_AUTHTOKEN) {
+      await prompter.note(
+        "Set NGROK_AUTHTOKEN in your environment before starting the gateway.\nGet your token at: https://dashboard.ngrok.com/get-started/your-authtoken",
+        "ngrok",
+      );
+    }
 
-  // Safety + constraints:
-  // - Tailscale wants bind=loopback so we never expose a non-loopback server + tailscale serve/funnel at once.
-  // - Funnel requires password auth.
-  if (tailscaleMode !== "off" && bind !== "loopback") {
-    await prompter.note("Tailscale requires bind=loopback. Adjusting bind to loopback.", "Note");
-    bind = "loopback";
-    customBindHost = undefined;
-  }
+    if (flow !== "quickstart") {
+      const domainInput = await prompter.text({
+        message: "ngrok static domain (optional, blank for random)",
+        placeholder: "mybot.ngrok-free.app",
+        initialValue: quickstartGateway.ngrokDomain ?? "",
+      });
+      ngrokDomain = typeof domainInput === "string" ? domainInput.trim() || undefined : undefined;
+    } else {
+      ngrokDomain = quickstartGateway.ngrokDomain;
+    }
 
-  if (tailscaleMode === "funnel" && authMode !== "password") {
-    await prompter.note("Tailscale funnel requires password auth.", "Note");
-    authMode = "password";
+    // ngrok tunnels loopback
+    if (bind !== "loopback") {
+      await prompter.note("ngrok requires bind=loopback. Adjusting bind to loopback.", "Note");
+      bind = "loopback";
+      customBindHost = undefined;
+    }
   }
 
   let gatewayToken: string | undefined;
@@ -242,6 +285,10 @@ export async function configureGatewayForOnboarding(
         mode: tailscaleMode as GatewayTailscaleMode,
         resetOnExit: tailscaleResetOnExit,
       },
+      ngrok: {
+        enabled: tunnelType === "ngrok",
+        ...(ngrokDomain ? { domain: ngrokDomain } : {}),
+      },
     },
   };
 
@@ -283,8 +330,10 @@ export async function configureGatewayForOnboarding(
       customBindHost: bind === "custom" ? customBindHost : undefined,
       authMode,
       gatewayToken,
+      tunnelType,
       tailscaleMode: tailscaleMode as GatewayTailscaleMode,
       tailscaleResetOnExit,
+      ngrokDomain,
     },
   };
 }

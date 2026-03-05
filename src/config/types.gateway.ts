@@ -317,6 +317,15 @@ export type GatewayToolsConfig = {
   allow?: string[];
 };
 
+export type GatewayNgrokConfig = {
+  /** Enable ngrok tunnel for public gateway access. */
+  enabled?: boolean;
+  /** ngrok auth token (or set NGROK_AUTHTOKEN env). */
+  authtoken?: string;
+  /** Static ngrok domain (e.g. "mybot.ngrok-free.app"). */
+  domain?: string;
+};
+
 export type GatewayConfig = {
   /** Single multiplexed port for Gateway WS + HTTP (default: 18789). */
   port?: number;
@@ -340,6 +349,7 @@ export type GatewayConfig = {
   controlUi?: GatewayControlUiConfig;
   auth?: GatewayAuthConfig;
   tailscale?: GatewayTailscaleConfig;
+  ngrok?: GatewayNgrokConfig;
   remote?: GatewayRemoteConfig;
   reload?: GatewayReloadConfig;
   tls?: GatewayTlsConfig;
