@@ -34,13 +34,11 @@ Runtime: **Node >= 22**, **pnpm >= 9**.
 
 ### Install
 
-```bash
-git clone https://github.com/dawnforge-lab/openclaw-reborn.git
-cd openclaw-reborn
-./install.sh
-```
+One-liner — clones to `~/.openclaw/app/`, builds, and links the `openclaw` binary:
 
-This installs dependencies, builds, and links the `openclaw` binary to `~/.local/bin/`.
+```bash
+curl -fsSL https://raw.githubusercontent.com/dawnforge-lab/openclaw-reborn/main/install.sh | bash
+```
 
 Then run the onboarding wizard:
 
@@ -48,16 +46,20 @@ Then run the onboarding wizard:
 openclaw onboard --install-daemon
 ```
 
-To update, pull and re-run:
+To update:
 
 ```bash
-git pull
-./install.sh
+curl -fsSL https://raw.githubusercontent.com/dawnforge-lab/openclaw-reborn/main/install.sh | bash
 ```
 
-### Dev loop
+Same script — pulls latest and rebuilds.
+
+### Development
 
 ```bash
+git clone https://github.com/dawnforge-lab/openclaw-reborn.git
+cd openclaw-reborn
+pnpm install
 pnpm gateway:watch
 ```
 
