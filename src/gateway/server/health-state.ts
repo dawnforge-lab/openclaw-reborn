@@ -7,6 +7,7 @@ import { getUpdateAvailable } from "../../infra/update-startup.js";
 import { normalizeMainKey } from "../../routing/session-key.js";
 import { resolveGatewayAuth } from "../auth.js";
 import type { Snapshot } from "../protocol/index.js";
+import { getNgrokUrl } from "../server-ngrok.js";
 
 let presenceVersion = 1;
 let healthVersion = 1;
@@ -26,6 +27,7 @@ export function buildGatewaySnapshot(): Snapshot {
   const updateAvailable = getUpdateAvailable() ?? undefined;
   // Health is async; caller should await getHealthSnapshot and replace later if needed.
   const emptyHealth: unknown = {};
+  const tunnelUrl = getNgrokUrl() || undefined;
   return {
     presence,
     health: emptyHealth,
@@ -42,6 +44,7 @@ export function buildGatewaySnapshot(): Snapshot {
     },
     authMode: auth.mode,
     updateAvailable,
+    tunnelUrl,
   };
 }
 

@@ -67,6 +67,7 @@ export const SnapshotSchema = Type.Object(
         channel: NonEmptyString,
       }),
     ),
+    tunnelUrl: Type.Optional(NonEmptyString),
   },
   { additionalProperties: false },
 );
