@@ -183,8 +183,20 @@ export async function configureGatewayForOnboarding(
 
   // ngrok config (only when tunnel=ngrok)
   let ngrokDomain: string | undefined;
+  let ngrokAuthtoken: string | undefined;
   if (tunnelType === "ngrok") {
-    if (!process.env.NGROK_AUTHTOKEN) {
+    const existingToken = process.env.NGROK_AUTHTOKEN ?? "";
+
+    if (flow !== "quickstart") {
+      const tokenInput = await prompter.text({
+        message: "ngrok authtoken",
+        placeholder: "Get yours at: dashboard.ngrok.com/get-started/your-authtoken",
+        initialValue: existingToken,
+        validate: (v) =>
+          v && v.trim().length > 0 ? undefined : "Required — get it from ngrok dashboard",
+      });
+      ngrokAuthtoken = typeof tokenInput === "string" ? tokenInput.trim() : undefined;
+    } else if (!existingToken) {
       await prompter.note(
         "Set NGROK_AUTHTOKEN in your environment before starting the gateway.\nGet your token at: https://dashboard.ngrok.com/get-started/your-authtoken",
         "ngrok",
@@ -303,6 +315,7 @@ export async function configureGatewayForOnboarding(
       },
       ngrok: {
         enabled: tunnelType === "ngrok",
+        ...(ngrokAuthtoken ? { authtoken: ngrokAuthtoken } : {}),
         ...(ngrokDomain ? { domain: ngrokDomain } : {}),
       },
     },
