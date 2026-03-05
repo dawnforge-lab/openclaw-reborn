@@ -1,14 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 import { createWizardPrompter as buildWizardPrompter } from "../../test/helpers/wizard-prompter.js";
-import type { WizardPrompter } from "./prompts.js";
 import { configureWhatsAppUserForOnboarding } from "./onboarding.whatsapp-user.js";
+import type { WizardPrompter } from "./prompts.js";
 
 describe("configureWhatsAppUserForOnboarding", () => {
-  function createPrompter(overrides?: { confirm?: ReturnType<typeof vi.fn> }) {
+  function createPrompter(overrides?: { confirm?: WizardPrompter["confirm"] }) {
     return buildWizardPrompter({
-      confirm: overrides?.confirm ?? vi.fn(async () => true),
-      note: vi.fn(async () => {}),
-    }) as WizardPrompter;
+      confirm:
+        overrides?.confirm ?? (vi.fn(async () => true) as unknown as WizardPrompter["confirm"]),
+      note: vi.fn(async () => {}) as unknown as WizardPrompter["note"],
+    });
   }
 
   it("skips in quickstart flow", async () => {
@@ -25,7 +26,9 @@ describe("configureWhatsAppUserForOnboarding", () => {
     const result = await configureWhatsAppUserForOnboarding({
       flow: "advanced",
       nextConfig: {},
-      prompter: createPrompter({ confirm: vi.fn(async () => true) }),
+      prompter: createPrompter({
+        confirm: vi.fn(async () => true) as unknown as WizardPrompter["confirm"],
+      }),
     });
 
     expect(result.plugins?.entries?.["whatsapp-user"]?.enabled).toBe(true);
@@ -38,7 +41,9 @@ describe("configureWhatsAppUserForOnboarding", () => {
     const result = await configureWhatsAppUserForOnboarding({
       flow: "advanced",
       nextConfig: {},
-      prompter: createPrompter({ confirm: vi.fn(async () => false) }),
+      prompter: createPrompter({
+        confirm: vi.fn(async () => false) as unknown as WizardPrompter["confirm"],
+      }),
     });
 
     expect(result.plugins?.entries?.["whatsapp-user"]).toBeUndefined();
@@ -54,7 +59,9 @@ describe("configureWhatsAppUserForOnboarding", () => {
           },
         },
       },
-      prompter: createPrompter({ confirm: vi.fn(async () => false) }),
+      prompter: createPrompter({
+        confirm: vi.fn(async () => false) as unknown as WizardPrompter["confirm"],
+      }),
     });
 
     expect(result.plugins?.entries?.["whatsapp-user"]?.enabled).toBe(false);
@@ -73,7 +80,9 @@ describe("configureWhatsAppUserForOnboarding", () => {
           },
         },
       },
-      prompter: createPrompter({ confirm: vi.fn(async () => true) }),
+      prompter: createPrompter({
+        confirm: vi.fn(async () => true) as unknown as WizardPrompter["confirm"],
+      }),
     });
 
     const cfg = result.plugins?.entries?.["whatsapp-user"]?.config as Record<string, unknown>;

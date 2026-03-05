@@ -1,17 +1,19 @@
 import { describe, expect, it, vi } from "vitest";
 import { createWizardPrompter as buildWizardPrompter } from "../../test/helpers/wizard-prompter.js";
-import type { WizardPrompter } from "./prompts.js";
 import { configureMemoryForOnboarding } from "./onboarding.memory.js";
+import type { WizardPrompter } from "./prompts.js";
 
 describe("configureMemoryForOnboarding", () => {
   function createPrompter(overrides?: {
-    confirm?: ReturnType<typeof vi.fn>;
-    text?: ReturnType<typeof vi.fn>;
+    confirm?: WizardPrompter["confirm"];
+    text?: WizardPrompter["text"];
   }) {
     return buildWizardPrompter({
-      confirm: overrides?.confirm ?? vi.fn(async () => true),
-      text: overrides?.text ?? vi.fn(async () => "sk-test-key"),
-    }) as WizardPrompter;
+      confirm:
+        overrides?.confirm ?? (vi.fn(async () => true) as unknown as WizardPrompter["confirm"]),
+      text:
+        overrides?.text ?? (vi.fn(async () => "sk-test-key") as unknown as WizardPrompter["text"]),
+    });
   }
 
   it("auto-enables in quickstart when OPENAI_API_KEY is set", async () => {
@@ -29,8 +31,11 @@ describe("configureMemoryForOnboarding", () => {
       const cfg = result.plugins?.entries?.["memory-lancedb"]?.config as Record<string, unknown>;
       expect((cfg.embedding as Record<string, unknown>).apiKey).toBe("${OPENAI_API_KEY}");
     } finally {
-      if (prev === undefined) delete process.env.OPENAI_API_KEY;
-      else process.env.OPENAI_API_KEY = prev;
+      if (prev === undefined) {
+        delete process.env.OPENAI_API_KEY;
+      } else {
+        process.env.OPENAI_API_KEY = prev;
+      }
     }
   });
 
@@ -46,7 +51,9 @@ describe("configureMemoryForOnboarding", () => {
 
       expect(result.plugins?.slots?.memory).toBeUndefined();
     } finally {
-      if (prev !== undefined) process.env.OPENAI_API_KEY = prev;
+      if (prev !== undefined) {
+        process.env.OPENAI_API_KEY = prev;
+      }
     }
   });
 
@@ -76,8 +83,8 @@ describe("configureMemoryForOnboarding", () => {
     const prev = process.env.OPENAI_API_KEY;
     delete process.env.OPENAI_API_KEY;
     try {
-      const text = vi.fn(async () => "sk-my-key");
-      const confirm = vi.fn(async () => true);
+      const text = vi.fn(async () => "sk-my-key") as unknown as WizardPrompter["text"];
+      const confirm = vi.fn(async () => true) as unknown as WizardPrompter["confirm"];
       const result = await configureMemoryForOnboarding({
         flow: "advanced",
         nextConfig: {},
@@ -88,12 +95,14 @@ describe("configureMemoryForOnboarding", () => {
       const cfg = result.plugins?.entries?.["memory-lancedb"]?.config as Record<string, unknown>;
       expect((cfg.embedding as Record<string, unknown>).apiKey).toBe("sk-my-key");
     } finally {
-      if (prev !== undefined) process.env.OPENAI_API_KEY = prev;
+      if (prev !== undefined) {
+        process.env.OPENAI_API_KEY = prev;
+      }
     }
   });
 
   it("disables memory-lancedb when user declines in advanced mode", async () => {
-    const confirm = vi.fn(async () => false);
+    const confirm = vi.fn(async () => false) as unknown as WizardPrompter["confirm"];
     const result = await configureMemoryForOnboarding({
       flow: "advanced",
       nextConfig: {
@@ -111,7 +120,7 @@ describe("configureMemoryForOnboarding", () => {
     const prev = process.env.OPENAI_API_KEY;
     process.env.OPENAI_API_KEY = "sk-from-env";
     try {
-      const confirm = vi.fn(async () => true);
+      const confirm = vi.fn(async () => true) as unknown as WizardPrompter["confirm"];
       const result = await configureMemoryForOnboarding({
         flow: "advanced",
         nextConfig: {},
@@ -122,8 +131,11 @@ describe("configureMemoryForOnboarding", () => {
       const cfg = result.plugins?.entries?.["memory-lancedb"]?.config as Record<string, unknown>;
       expect((cfg.embedding as Record<string, unknown>).apiKey).toBe("${OPENAI_API_KEY}");
     } finally {
-      if (prev === undefined) delete process.env.OPENAI_API_KEY;
-      else process.env.OPENAI_API_KEY = prev;
+      if (prev === undefined) {
+        delete process.env.OPENAI_API_KEY;
+      } else {
+        process.env.OPENAI_API_KEY = prev;
+      }
     }
   });
 
@@ -141,8 +153,11 @@ describe("configureMemoryForOnboarding", () => {
       expect(cfg.autoCapture).toBe(true);
       expect(cfg.autoRecall).toBe(true);
     } finally {
-      if (prev === undefined) delete process.env.OPENAI_API_KEY;
-      else process.env.OPENAI_API_KEY = prev;
+      if (prev === undefined) {
+        delete process.env.OPENAI_API_KEY;
+      } else {
+        process.env.OPENAI_API_KEY = prev;
+      }
     }
   });
 });
