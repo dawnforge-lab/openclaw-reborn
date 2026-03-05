@@ -30,7 +30,31 @@ Vector memory setup is now part of the onboarding wizard instead of manual JSON 
 
 ## Install
 
-Runtime: **Node >= 22**.
+Runtime: **Node >= 22**, **pnpm >= 9**.
+
+### Quick install (isolated from source)
+
+Install globally from GitHub — no need to clone the repo:
+
+```bash
+pnpm install -g "github:dawnforge-lab/openclaw-reborn"
+```
+
+Then run the onboarding wizard:
+
+```bash
+openclaw onboard --install-daemon
+```
+
+To update to the latest version:
+
+```bash
+pnpm install -g "github:dawnforge-lab/openclaw-reborn"
+```
+
+### Development setup
+
+If you want to contribute or modify the source:
 
 ```bash
 git clone https://github.com/dawnforge-lab/openclaw-reborn.git
