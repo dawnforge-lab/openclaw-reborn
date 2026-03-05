@@ -660,6 +660,14 @@ export const OpenClawSchema = z
           })
           .strict()
           .optional(),
+        ngrok: z
+          .object({
+            enabled: z.boolean().optional(),
+            authtoken: z.string().optional().register(sensitive),
+            domain: z.string().optional(),
+          })
+          .strict()
+          .optional(),
         remote: z
           .object({
             url: z.string().optional(),
