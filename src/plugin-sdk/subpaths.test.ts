@@ -45,6 +45,7 @@ const bundledExtensionSubpathLoaders = [
   { id: "twitch", load: () => import("openclaw/plugin-sdk/twitch") },
   { id: "voice-call", load: () => import("openclaw/plugin-sdk/voice-call") },
   { id: "zalo", load: () => import("openclaw/plugin-sdk/zalo") },
+  { id: "whatsapp-user", load: () => import("openclaw/plugin-sdk/whatsapp-user") },
   { id: "zalouser", load: () => import("openclaw/plugin-sdk/zalouser") },
 ] as const;
 

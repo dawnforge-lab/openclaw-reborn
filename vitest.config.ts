@@ -18,6 +18,7 @@ const pluginSdkSubpaths = [
   "signal",
   "imessage",
   "whatsapp",
+  "whatsapp-user",
   "line",
   "msteams",
   "acpx",

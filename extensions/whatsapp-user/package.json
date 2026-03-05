@@ -1,0 +1,12 @@
+{
+  "name": "@openclaw/whatsapp-user",
+  "version": "2026.3.5",
+  "private": true,
+  "description": "WhatsApp user access — read/write messages as the user",
+  "type": "module",
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}

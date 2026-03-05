@@ -72,6 +72,10 @@
       "types": "./dist/plugin-sdk/whatsapp.d.ts",
       "default": "./dist/plugin-sdk/whatsapp.js"
     },
+    "./plugin-sdk/whatsapp-user": {
+      "types": "./dist/plugin-sdk/whatsapp-user.d.ts",
+      "default": "./dist/plugin-sdk/whatsapp-user.js"
+    },
     "./plugin-sdk/line": {
       "types": "./dist/plugin-sdk/line.d.ts",
       "default": "./dist/plugin-sdk/line.js"

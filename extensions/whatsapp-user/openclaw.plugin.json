@@ -1,0 +1,17 @@
+{
+  "id": "whatsapp-user",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "authDir": {
+        "type": "string",
+        "description": "Directory for WhatsApp user credentials (default: ~/.openclaw/whatsapp-user)"
+      },
+      "messageRetentionDays": {
+        "type": "number",
+        "description": "Days to keep cached messages (default: 7)"
+      }
+    }
+  }
+}
