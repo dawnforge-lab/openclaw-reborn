@@ -71,11 +71,23 @@ export async function configureGatewayForOnboarding(
       : await prompter.select<GatewayWizardSettings["bind"]>({
           message: "Gateway bind",
           options: [
-            { value: "loopback", label: "Loopback (127.0.0.1)" },
-            { value: "lan", label: "LAN (0.0.0.0)" },
-            { value: "tailnet", label: "Tailnet (Tailscale IP)" },
-            { value: "auto", label: "Auto (Loopback → LAN)" },
-            { value: "custom", label: "Custom IP" },
+            {
+              value: "loopback",
+              label: "Loopback (127.0.0.1)",
+              hint: "Local only — use with ngrok or Tailscale for remote access",
+            },
+            { value: "lan", label: "LAN (0.0.0.0)", hint: "Accessible from local network" },
+            {
+              value: "tailnet",
+              label: "Tailnet (Tailscale IP)",
+              hint: "Bind directly to Tailscale interface",
+            },
+            {
+              value: "auto",
+              label: "Auto (Loopback → LAN)",
+              hint: "Tries loopback, falls back to LAN",
+            },
+            { value: "custom", label: "Custom IP", hint: "Bind to a specific network interface" },
           ],
         });
 
@@ -117,7 +129,11 @@ export async function configureGatewayForOnboarding(
           message: "Tunnel / public access",
           options: [
             { value: "none", label: "None", hint: "Local access only" },
-            { value: "ngrok", label: "ngrok", hint: "Public HTTPS tunnel (recommended for mobile app)" },
+            {
+              value: "ngrok",
+              label: "ngrok",
+              hint: "Public HTTPS tunnel (recommended for mobile app)",
+            },
             { value: "tailscale", label: "Tailscale", hint: "Private tailnet or public funnel" },
           ],
         });
