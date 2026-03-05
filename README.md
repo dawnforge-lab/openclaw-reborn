@@ -37,7 +37,7 @@ Runtime: **Node >= 22**, **pnpm >= 9**.
 Install globally from GitHub — no need to clone the repo:
 
 ```bash
-pnpm install -g "github:dawnforge-lab/openclaw-reborn"
+npm install -g "github:dawnforge-lab/openclaw-reborn"
 ```
 
 Then run the onboarding wizard:
@@ -49,7 +49,7 @@ openclaw onboard --install-daemon
 To update to the latest version:
 
 ```bash
-pnpm install -g "github:dawnforge-lab/openclaw-reborn"
+npm install -g "github:dawnforge-lab/openclaw-reborn"
 ```
 
 ### Development setup
