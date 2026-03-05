@@ -34,10 +34,10 @@ Runtime: **Node >= 22**, **pnpm >= 9**.
 
 ### Quick install (isolated from source)
 
-Install globally from GitHub — no need to clone the repo:
+One-liner — clones to `~/.openclaw-reborn`, builds, and links the `openclaw` binary:
 
 ```bash
-npm install -g "github:dawnforge-lab/openclaw-reborn"
+curl -fsSL https://raw.githubusercontent.com/dawnforge-lab/openclaw-reborn/main/install.sh | bash
 ```
 
 Then run the onboarding wizard:
@@ -46,11 +46,13 @@ Then run the onboarding wizard:
 openclaw onboard --install-daemon
 ```
 
-To update to the latest version:
+To update:
 
 ```bash
-npm install -g "github:dawnforge-lab/openclaw-reborn"
+curl -fsSL https://raw.githubusercontent.com/dawnforge-lab/openclaw-reborn/main/install.sh | bash
 ```
+
+Same script — it pulls latest and rebuilds.
 
 ### Development setup
 
